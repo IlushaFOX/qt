@@ -1,0 +1,62 @@
+#include "mainwindow.h"
+#include <QPushButton>
+#include <QVBoxLayout>
+#include <QWidget>
+
+MainWindow::MainWindow(QWidget *parent)
+    : QMainWindow(parent),
+      currentMode(0) // Начальный режим: все выключено
+{
+    // Инициализация пинов для светофора
+    wiringPiSetupGpio();
+    pinMode(17, OUTPUT); // Красный
+    pinMode(27, OUTPUT); // Желтый
+    pinMode(22, OUTPUT); // Зеленый
+
+    QWidget *centralWidget = new QWidget(this);
+    setCentralWidget(centralWidget);
+
+    switchButton = new QPushButton("Переключить режим", this);
+    connect(switchButton, &QPushButton::clicked, this, &MainWindow::onSwitchButtonClicked);
+
+    QVBoxLayout *layout = new QVBoxLayout;
+    layout->addWidget(switchButton);
+    centralWidget->setLayout(layout);
+
+    resize(400, 300);
+}
+
+MainWindow::~MainWindow() {}
+
+void MainWindow::onSwitchButtonClicked() {
+    toggleLight(); // Переключить режим светофора
+}
+
+void MainWindow::toggleLight() {
+    currentMode = (currentMode + 1) % 4; // Переключаем режим светофора
+    updateLight();
+}
+
+void MainWindow::updateLight() {
+    // Все выключены
+    digitalWrite(17, LOW);
+    digitalWrite(27, LOW);
+    digitalWrite(22, LOW);
+
+    // Включаем нужный свет в зависимости от режима
+    switch (currentMode) {
+        case 0:
+            digitalWrite(17, HIGH); // Красный
+            break;
+        case 1:
+            digitalWrite(27, HIGH); // Желтый
+            break;
+        case 2:
+            digitalWrite(22, HIGH); // Зеленый
+            break;
+        case 3:
+            digitalWrite(17, HIGH); // Красный
+            digitalWrite(22, HIGH); // Зеленый (мигает)
+            break;
+    }
+}

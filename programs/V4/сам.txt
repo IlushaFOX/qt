@@ -1,0 +1,3 @@
+Добавляем три QLabel - labelRed, labelYellow, labelGreen и убираем надписи
+Добавляем три QSpinBox - spinBoxRed, spinBoxYellow, spinBoxGreen
+Добавляем кнопку и изменяем надпись на ней на "Старт" 

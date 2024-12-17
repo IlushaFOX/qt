@@ -1,0 +1,33 @@
+#include <Wire.h>
+
+const int trigPin = 9;
+const int echoPin = 10;
+
+long duration;
+int distance;
+
+void setup() {
+  Wire.begin(8); // Устанавливаем адрес устройства для общения с Raspberry Pi
+  Serial.begin(9600);
+
+  pinMode(trigPin, OUTPUT);
+  pinMode(echoPin, INPUT);
+}
+
+void loop() {
+  digitalWrite(trigPin, LOW);
+  delayMicroseconds(2);
+  
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
+  
+  duration = pulseIn(echoPin, HIGH);
+  distance = duration * 0.0344 / 2; // Формула для расчета расстояния
+  
+  Wire.beginTransmission(8); // Адрес Raspberry Pi
+  Wire.write(distance); // Отправка расстояния
+  Wire.endTransmission();
+  
+  delay(500); // Задержка перед следующим измерением
+}

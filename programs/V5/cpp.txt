@@ -1,0 +1,63 @@
+#include "mainwindow.h"
+#include "ui_mainwindow.h"
+
+MainWindow::MainWindow(QWidget *parent)
+    : QMainWindow(parent)
+    , ui(new Ui::MainWindow)
+    , angle(0.0)    // Инициализация угла
+    , radius(50.0)  // Начальный радиус
+{
+    ui->setupUi(this);
+
+    // Устанавливаем центр движения в центр окна
+    center = QPointF(this->width() / 2, this->height() / 2);
+
+    // Устанавливаем начальную позицию кнопки
+    ui->pushButton->move(center.x(), center.y());
+
+    // Создаем таймер
+    timer = new QTimer(this);
+    connect(timer, &QTimer::timeout, this, &MainWindow::moveButton);
+
+    // Подключаем кнопку к слоту для запуска анимации
+    connect(ui->pushButton, &QPushButton::clicked, this, &MainWindow::onButtonClicked);
+}
+
+MainWindow::~MainWindow()
+{
+    delete ui;
+}
+
+// Слот для обработки нажатия кнопки
+void MainWindow::onButtonClicked()
+{
+    // Запускаем таймер с интервалом 50 мс
+    if (!timer->isActive()) {
+        angle = 0.0;    // Сбрасываем угол
+        radius = 50.0;  // Сбрасываем радиус
+        timer->start(50);
+    }
+}
+
+// Слот для обновления позиции кнопки
+void MainWindow::moveButton()
+{
+    // Увеличиваем угол и радиус
+    angle += 5.0;         // Увеличиваем угол на 5 градусов
+    radius += 0.5;        // Увеличиваем радиус
+
+    // Конвертируем угол в радианы
+    double rad = qDegreesToRadians(angle);
+
+    // Вычисляем новую позицию кнопки
+    int newX = static_cast<int>(center.x() + radius * qCos(rad));
+    int newY = static_cast<int>(center.y() + radius * qSin(rad));
+
+    // Перемещаем кнопку
+    ui->pushButton->move(newX, newY);
+
+    // Проверка на выход за пределы окна
+    if (newX < 0 || newY < 0 || newX > this->width() || newY > this->height()) {
+        timer->stop();  // Останавливаем анимацию
+    }
+}

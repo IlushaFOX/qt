@@ -1,0 +1,51 @@
+#include "mainwindow.h"
+#include "ui_mainwindow.h"
+
+MainWindow::MainWindow(QWidget *parent)
+    : QMainWindow(parent)
+    , ui(new Ui::MainWindow)
+{
+    ui->setupUi(this);
+
+    // Инициализация UDP сокета
+    udpSocket = new QUdpSocket(this);
+
+    // Привязка сокета к порту 12345 для прослушивания UDP сообщений
+    bool success = udpSocket->bind(QHostAddress::Any, 12345);
+    if (success) {
+        ui->textEdit->append("UDP сокет успешно привязан к порту 12345.");
+    } else {
+        ui->textEdit->append("Ошибка привязки сокета к порту.");
+    }
+
+    // Соединяем сигнал "readyRead" сокета с обработчиком processPendingDatagrams
+    connect(udpSocket, &QUdpSocket::readyRead, this, &MainWindow::processPendingDatagrams);
+}
+
+MainWindow::~MainWindow()
+{
+    delete ui;
+}
+
+void MainWindow::processPendingDatagrams()
+{
+    // Обработка всех доступных датаграмм
+    while (udpSocket->hasPendingDatagrams()) {
+        // Создаём буфер для данных и переменную для хранения IP отправителя
+        QByteArray datagram;
+        QHostAddress sender;
+        quint16 senderPort;
+
+        // Читаем датаграмму
+        datagram.resize(udpSocket->pendingDatagramSize());
+        udpSocket->readDatagram(datagram.data(), datagram.size(), &sender, &senderPort);
+
+        // Преобразуем данные в строку и добавляем информацию в текстовое поле
+        QString message = QString("Сообщение от %1:%2 -> %3")
+                              .arg(sender.toString())
+                              .arg(senderPort)
+                              .arg(QString(datagram));
+
+        ui->textEdit->append(message);
+    }
+}

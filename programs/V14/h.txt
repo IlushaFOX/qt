@@ -1,0 +1,26 @@
+#ifndef MAINWINDOW_H
+#define MAINWINDOW_H
+
+#include <QMainWindow>
+
+namespace Ui {
+class MainWindow;
+}
+
+class MainWindow : public QMainWindow
+{
+    Q_OBJECT
+
+public:
+    explicit MainWindow(QWidget *parent = nullptr);
+    ~MainWindow();
+
+private slots:
+    void measureDistance(); // Слот для измерения расстояния
+
+private:
+    Ui::MainWindow *ui;
+    int fd; // Дескриптор I2C устройства
+};
+
+#endif // MAINWINDOW_H

@@ -1,0 +1,28 @@
+#ifndef MAINWINDOW_H
+#define MAINWINDOW_H
+
+#include <QMainWindow>
+#include <QUdpSocket>
+
+namespace Ui {
+class MainWindow;
+}
+
+class MainWindow : public QMainWindow
+{
+    Q_OBJECT
+
+public:
+    explicit MainWindow(QWidget *parent = nullptr);
+    ~MainWindow();
+
+private slots:
+    // Слот для отправки сообщения
+    void sendMessage();
+
+private:
+    Ui::MainWindow *ui;             // Указатель на интерфейс
+    QUdpSocket *udpSocket;          // Указатель на объект QUdpSocket для отправки сообщений
+};
+
+#endif // MAINWINDOW_H

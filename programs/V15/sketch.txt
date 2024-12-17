@@ -1,0 +1,21 @@
+#include <NewPing.h>
+
+#define TRIGGER_PIN  12  // Пин для триггера
+#define ECHO_PIN     13  // Пин для эхо
+#define MAX_DISTANCE 200 // Максимальное расстояние для измерений (в см)
+
+NewPing sonar(TRIGGER_PIN, ECHO_PIN, MAX_DISTANCE);
+
+void setup() {
+  Serial.begin(9600);  // Открываем последовательный порт
+}
+
+void loop() {
+  delay(500); // Задержка между измерениями
+
+  unsigned int distance = sonar.ping_cm(); // Измеряем расстояние в см
+  if (distance == 0) {
+    distance = MAX_DISTANCE; // Если расстояние не удалось измерить, ставим максимально допустимое
+  }
+  Serial.println(distance); // Отправляем расстояние на Raspberry Pi
+}

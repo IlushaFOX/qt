@@ -1,0 +1,44 @@
+#include "mainwindow.h"
+#include "ui_mainwindow.h"
+#include <QUdpSocket>
+#include <QHostAddress>
+
+MainWindow::MainWindow(QWidget *parent) :
+    QMainWindow(parent),
+    ui(new Ui::MainWindow)
+{
+    ui->setupUi(this);
+
+    // Создаем объект QUdpSocket для отправки сообщений
+    udpSocket = new QUdpSocket(this);
+
+    // Подключаем кнопку Send к слоту для отправки сообщения
+    connect(ui->sendButton, &QPushButton::clicked, this, &MainWindow::sendMessage);
+}
+
+MainWindow::~MainWindow()
+{
+    delete ui;
+}
+
+void MainWindow::sendMessage()
+{
+    // Получаем текст из QLineEdit
+    QString message = ui->lineEdit->text();
+
+    // Адрес назначения (Any, чтобы отправить на все устройства в сети)
+    QHostAddress receiverAddress = QHostAddress::Any;
+    quint16 receiverPort = 12345;  // Порт, на который будет отправляться сообщение
+
+    // Преобразуем сообщение в QByteArray
+    QByteArray datagram = message.toUtf8();
+
+    // Отправляем сообщение на указанный адрес и порт
+    udpSocket->writeDatagram(datagram, receiverAddress, receiverPort);
+
+    // Выводим отправленное сообщение в QTextEdit
+    ui->textEdit->append("Sent: " + message);
+
+    // Очищаем поле для ввода
+    ui->lineEdit->clear();
+}

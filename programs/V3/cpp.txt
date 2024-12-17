@@ -1,0 +1,43 @@
+#include "mainwindow.h"
+#include "ui_mainwindow.h"
+
+MainWindow::MainWindow(QWidget *parent)
+    : QMainWindow(parent), ui(new Ui::MainWindow) {
+    ui->setupUi(this);
+
+    // Соединение кнопки с функцией добавления времени
+    connect(ui->pushButton, &QPushButton::clicked, this, &MainWindow::onAddTime);
+
+    // Соединение клика по элементу списка с вычислением разницы во времени
+    connect(ui->listWidget, &QListWidget::itemClicked, this, &MainWindow::onItemClicked);
+    }
+
+MainWindow::~MainWindow() {
+    delete ui;
+}
+
+// Добавляет текущую дату и время в список
+void MainWindow::onAddTime()
+{
+    QDateTime currentDateTime = QDateTime::currentDateTime();
+    QString dateTimeString = currentDateTime.toString("yyyy-MM-dd HH:mm:ss");
+
+    ui->listWidget->addItem(dateTimeString);  // Добавляем строку в список
+}
+
+// Обрабатывает клик по элементу списка и выводит разницу во времени
+void MainWindow::onItemClicked(QListWidgetItem* item)
+{
+    QString selectedTimeString = item->text();
+    QDateTime selectedTime = QDateTime::fromString(selectedTimeString, "yyyy-MM-dd HH:mm:ss");
+
+    if (!selectedTime.isValid()) {
+        QMessageBox::warning(this, "Ошибка", "Неверный формат даты/времени.");
+        return;
+    }
+
+    QDateTime currentDateTime = QDateTime::currentDateTime();
+    qint64 secondsDifference = selectedTime.secsTo(currentDateTime);
+
+    QMessageBox::information(this, "Разница во времени", QString("Разница: %1 секунд").arg(secondsDifference));
+}

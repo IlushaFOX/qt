@@ -1,0 +1,62 @@
+#include "mainwindow.h"
+#include "ui_mainwindow.h"
+
+MainWindow::MainWindow(QWidget *parent)
+    : QMainWindow(parent)
+    , ui(new Ui::MainWindow)
+    , timer(new QTimer(this))
+    , currentState(0)
+{
+    ui->setupUi(this);
+
+    // Инициализация светофора
+    updateLightDisplay();
+
+    // Подключение таймера
+    connect(timer, &QTimer::timeout, this, &MainWindow::updateTrafficLight);
+
+    // Подключение кнопки
+    connect(ui->buttonStartStop, &QPushButton::clicked, this, &MainWindow::onStartStopButtonClicked);
+}
+
+MainWindow::~MainWindow()
+{
+    delete ui;
+}
+
+void MainWindow::updateTrafficLight()
+{
+    // Меняем состояние светофора
+    currentState = (currentState + 1) % 3; // 0 -> 1 -> 2 -> 0
+    updateLightDisplay();
+
+    // Устанавливаем интервал таймера в зависимости от состояния
+    int interval = 0;
+    if (currentState == 0) // Красный
+        interval = ui->spinBoxRed->value() * 1000;
+    else if (currentState == 1) // Жёлтый
+        interval = ui->spinBoxYellow->value() * 1000;
+    else if (currentState == 2) // Зелёный
+        interval = ui->spinBoxGreen->value() * 1000;
+
+    timer->start(interval);
+}
+
+void MainWindow::onStartStopButtonClicked()
+{
+    if (timer->isActive()) {
+        timer->stop();
+        ui->buttonStartStop->setText("Старт");
+    } else {
+        timer->start(ui->spinBoxRed->value() * 1000); // Старт с красного
+        ui->buttonStartStop->setText("Стоп");
+    }
+}
+
+void MainWindow::updateLightDisplay()
+{
+    // Устанавливаем стили для кружков
+    ui->labelRed->setStyleSheet(currentState == 0 ? "background-color: red;" : "background-color: gray;");
+    ui->labelYellow->setStyleSheet(currentState == 1 ? "background-color: yellow;" : "background-color: gray;");
+    ui->labelGreen->setStyleSheet(currentState == 2 ? "background-color: green;" : "background-color: gray;");
+}

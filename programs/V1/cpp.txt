@@ -1,0 +1,42 @@
+#include "mainwindow.h"
+#include "ui_mainwindow.h"
+
+MainWindow::MainWindow(QWidget *parent)
+    : QMainWindow(parent), ui(new Ui::MainWindow), timer(new QTimer(this)) {
+    ui->setupUi(this);
+
+    ui->tableWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch); //растягивает по ширине окна элементы
+
+    //подключаем таймер
+    connect(timer, &QTimer::timeout, this, &MainWindow::addRowToTable);
+    timer->start(3000);
+    //обрабатываем клик мышки
+    connect(ui->tableWidget, &QTableWidget::cellClicked, this, &MainWindow::removeRowFromTable);
+    }
+
+MainWindow::~MainWindow() {
+    delete ui;
+}
+
+void MainWindow::addRowToTable()
+{
+    int row = ui->tableWidget->rowCount();
+    ui->tableWidget->insertRow(row);
+
+    // Data generation
+    QString time = QTime::currentTime().toString("HH:mm:ss");
+    QString date = QDate::currentDate().toString("dd.MM.yyyy");
+    QString lastName = "Chistov";
+    QString firstName = "Ilya";
+
+    // Filling the row
+    ui->tableWidget->setItem(row, 0, new QTableWidgetItem(time));
+    ui->tableWidget->setItem(row, 1, new QTableWidgetItem(date));
+    ui->tableWidget->setItem(row, 2, new QTableWidgetItem(lastName));
+    ui->tableWidget->setItem(row, 3, new QTableWidgetItem(firstName));
+}
+
+void MainWindow::removeRowFromTable(int row)
+{
+    ui->tableWidget->removeRow(row);
+}

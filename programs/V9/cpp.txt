@@ -1,0 +1,60 @@
+#include "mainwindow.h"
+#include "ui_mainwindow.h"
+
+MainWindow::MainWindow(QWidget *parent)
+    : QMainWindow(parent)
+    , ui(new Ui::MainWindow)
+    , tcpServer(new QTcpServer(this))
+{
+    ui->setupUi(this);
+
+    // Запуск сервера на порту 12345
+    if (tcpServer->listen(QHostAddress::Any, 12345)) {
+        ui->textEdit->append("Сервер запущен на порту 12345");
+    } else {
+        ui->textEdit->append("Не удалось запустить сервер");
+    }
+
+    // Подключаем сигнал для нового подключения
+    connect(tcpServer, &QTcpServer::newConnection, this, &MainWindow::on_newConnection);
+
+    // Подключаем кнопку "Отправить"
+    connect(ui->sendButton, &QPushButton::clicked, this, &MainWindow::onSendMessageButtonClicked);
+}
+
+MainWindow::~MainWindow()
+{
+    delete ui;
+}
+
+void MainWindow::on_newConnection()
+{
+    // При подключении нового клиента создаем сокет
+    QTcpSocket *clientSocket = tcpServer->nextPendingConnection();
+
+    // Добавляем сокет в список клиентов
+    tcpClients.append(clientSocket);
+
+    // Отображаем IP-адрес клиента
+    QString ip = clientSocket->peerAddress().toString();
+    ui->textEdit->append("Подключен клиент: " + ip);
+}
+
+void MainWindow::onSendMessageButtonClicked()
+{
+    // Получаем сообщение из QLineEdit
+    QString message = ui->lineEdit->text();
+
+    if (!message.isEmpty()) {
+        // Отправляем сообщение всем подключенным клиентам
+        for (QTcpSocket *clientSocket : std::as_const(tcpClients)) {  // Используем std::as_const вместо qAsConst
+            clientSocket->write(message.toUtf8());
+        }
+
+        // Отображаем отправленное сообщение в QTextEdit
+        ui->textEdit->append("Вы: " + message);
+
+        // Очищаем строку ввода
+        ui->lineEdit->clear();
+    }
+}

@@ -1,0 +1,44 @@
+#include "mainwindow.h"
+#include "ui_mainwindow.h"
+#include <QGraphicsScene>
+#include <QGraphicsEllipseItem>
+#include <QMouseEvent>
+
+MainWindow::MainWindow(QWidget *parent)
+    : QMainWindow(parent)
+    , ui(new Ui::MainWindow)
+    , scene(new QGraphicsScene(this))
+{
+    ui->setupUi(this);
+
+    // Настройка QGraphicsView
+    ui->graphicsView->setScene(scene);
+    ui->graphicsView->setRenderHint(QPainter::Antialiasing);
+    ui->graphicsView->setRenderHint(QPainter::SmoothPixmapTransform);
+}
+
+MainWindow::~MainWindow()
+{
+    delete ui;
+}
+
+void MainWindow::mousePressEvent(QMouseEvent *event)
+{
+    // Получаем координаты клика в области QGraphicsView
+    QPointF clickPos = ui->graphicsView->mapToScene(event->pos());
+
+    // Размер круга
+    static int radius = 100; // Начальный радиус круга
+    const int minRadius = 1; // Минимальный радиус круга
+
+    // Создаем новый круг в месте клика с указанным радиусом
+    QGraphicsEllipseItem *circle = new QGraphicsEllipseItem(
+        clickPos.x() - radius / 2, clickPos.y() - radius / 2, radius, radius);
+    circle->setBrush(Qt::blue);
+    scene->addItem(circle);
+
+    // Уменьшаем размер для следующего круга, если радиус больше минимального
+    if (radius > minRadius) {
+        radius -= 1; // Уменьшаем радиус на 1 пиксель с каждым кликом
+    }
+}

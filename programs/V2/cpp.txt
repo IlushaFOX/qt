@@ -1,0 +1,39 @@
+#include "mainwindow.h"
+#include "ui_mainwindow.h"
+
+MainWindow::MainWindow(QWidget *parent)
+    : QMainWindow(parent), ui(new Ui::MainWindow) {
+    ui->setupUi(this);
+
+    // Соединение сигнала кнопки с нашим слотом
+    connect(ui->pushButton, &QPushButton::clicked, this, &MainWindow::onAddRowButtonClicked);
+    }
+
+MainWindow::~MainWindow() {
+    delete ui;
+}
+
+void MainWindow::onAddRowButtonClicked()
+{
+    // Добавляем новую строку
+    int row = ui->tableWidget->rowCount();
+    ui->tableWidget->insertRow(row);
+
+    // Заполняем первый столбец текущим временем
+    auto *timeItem = new QTableWidgetItem(QTime::currentTime().toString("HH:mm:ss"));
+    ui->tableWidget->setItem(row, 0, timeItem);
+
+    // Заполняем второй столбец текущей датой
+    auto *dateItem = new QTableWidgetItem(QDate::currentDate().toString("dd.MM.yyyy"));
+    ui->tableWidget->setItem(row, 1, dateItem);
+
+    // Третий столбец: QComboBox для выбора фамилии
+    auto *lastNameComboBox = new QComboBox();
+    lastNameComboBox->addItems({"Иванов"});
+    ui->tableWidget->setCellWidget(row, 2, lastNameComboBox);
+
+    // Четвертый столбец: QComboBox для выбора имени
+    auto *nameComboBox = new QComboBox();
+    nameComboBox->addItems({"Алексей", "Пётр", "Иван"});
+    ui->tableWidget->setCellWidget(row, 3, nameComboBox);
+}

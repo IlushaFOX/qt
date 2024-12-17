@@ -1,0 +1,46 @@
+#include "mainwindow.h"
+#include "ui_mainwindow.h"
+#include <QTcpSocket>
+#include <QHostAddress>
+
+MainWindow::MainWindow(QWidget *parent) :
+    QMainWindow(parent),
+    ui(new Ui::MainWindow),
+    tcpSocket(new QTcpSocket(this))
+{
+    ui->setupUi(this);
+
+    // Подключаем сигнал для получения данных от клиента
+    connect(tcpSocket, &QTcpSocket::readyRead, this, &MainWindow::onDataReceived);
+
+    // Подключаем сигнал для получения IP-адреса
+    connect(tcpSocket, &QTcpSocket::connected, this, &MainWindow::onConnected);
+
+    // Настроим сокет для подключения к порту 12345
+    tcpSocket->connectToHost(QHostAddress::Any, 12345);
+}
+
+MainWindow::~MainWindow()
+{
+    delete ui;
+}
+
+void MainWindow::onDataReceived()
+{
+    // Получаем данные из сокета
+    QByteArray data = tcpSocket->readAll();
+
+    // Получаем IP-адрес отправителя
+    QString senderIP = tcpSocket->peerAddress().toString();
+
+    // Формируем сообщение для отображения
+    QString message = QString("From %1: %2").arg(senderIP).arg(QString(data));
+
+    // Отображаем сообщение в QTextEdit
+    ui->messageDisplay->append(message);
+}
+
+void MainWindow::onConnected()
+{
+    ui->messageDisplay->append("Connected to the server and listening for messages...");
+}

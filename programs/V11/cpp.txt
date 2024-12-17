@@ -1,0 +1,45 @@
+#include "mainwindow.h"
+#include <QGraphicsRectItem>
+#include <QMouseEvent> 
+
+MainWindow::MainWindow(QWidget *parent)
+    : QMainWindow(parent),
+    rotation(0)
+{
+    // Создаем сцену и представление
+    scene = new QGraphicsScene(this);
+    view = new QGraphicsView(scene, this);
+
+    // Настройка размеров и позиции QGraphicsView
+    setFixedSize(600, 600);  // Размер главного окна
+    view->setGeometry(10, 10, 580, 580);  // Позиция и размер QGraphicsView
+
+    // Создаем квадрат с центром в (0, 0)
+    square = new QGraphicsRectItem(-25, -25, 50, 50);  // Квадрат размером 50x50
+    square->setBrush(Qt::blue);
+    scene->addItem(square);
+
+    // Разрешение на захват событий мыши
+    setMouseTracking(true);
+}
+
+MainWindow::~MainWindow()
+{
+    // Освобождение ресурсов
+    delete square;
+    delete scene;
+    delete view;
+}
+
+void MainWindow::mousePressEvent(QMouseEvent *event)
+{
+    // Получаем координаты клика на сцене
+    QPointF clickPos = view->mapToScene(event->pos());
+
+    // Перемещаем квадрат так, чтобы его центр совпал с точкой клика
+    square->setPos(clickPos - QPointF(square->rect().width() / 2 - 20, square->rect().height() / 2 - 20));
+
+    // Поворачиваем квадрат на 45 градусов
+    rotation += 45;
+    square->setRotation(rotation);
+}

@@ -1,0 +1,33 @@
+#ifndef MAINWINDOW_H
+#define MAINWINDOW_H
+
+#include <QMainWindow>
+#include <QTcpServer>
+#include <QTcpSocket>
+#include <QHostAddress>
+#include <QVector>
+#include <algorithm> // Для std::as_const
+
+QT_BEGIN_NAMESPACE
+namespace Ui { class MainWindow; }
+QT_END_NAMESPACE
+
+class MainWindow : public QMainWindow
+{
+    Q_OBJECT
+
+public:
+    MainWindow(QWidget *parent = nullptr);
+    ~MainWindow();
+
+private slots:
+    void on_newConnection(); // Слот для подключения нового клиента
+    void onSendMessageButtonClicked(); // Слот для отправки сообщения всем клиентам
+
+private:
+    Ui::MainWindow *ui;
+    QTcpServer *tcpServer; // Серверный сокет
+    QVector<QTcpSocket*> tcpClients; // Массив для хранения всех подключенных клиентов
+};
+
+#endif // MAINWINDOW_H

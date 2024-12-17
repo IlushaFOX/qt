@@ -1,0 +1,59 @@
+#include "mainwindow.h"
+#include "ui_mainwindow.h"
+#include <QSerialPort>
+#include <QSerialPortInfo>
+#include <QDebug>
+
+MainWindow::MainWindow(QWidget *parent)
+    : QMainWindow(parent)
+    , ui(new Ui::MainWindow)
+    , serialPort(new QSerialPort(this))
+    , timer(new QTimer(this))
+{
+    ui->setupUi(this);
+
+    // Настройка последовательного порта
+    serialPort->setPortName("/dev/ttyUSB0"); // Подключение к порту, где находится Arduino
+    serialPort->setBaudRate(QSerialPort::Baud9600); // Скорость передачи данных
+    serialPort->setDataBits(QSerialPort::Data8); // 8 бит данных
+    serialPort->setParity(QSerialPort::NoParity); // Без четности
+    serialPort->setStopBits(QSerialPort::OneStop); // Один стоп-бит
+    serialPort->setFlowControl(QSerialPort::NoFlowControl); // Без управления потоком
+
+    // Подключаем сигнал чтения данных с порта
+    connect(serialPort, &QSerialPort::readyRead, this, &MainWindow::readSerialData);
+
+    // Подключаем кнопку измерения
+    connect(ui->measureButton, &QPushButton::clicked, this, &MainWindow::on_measureButton_clicked);
+
+    // Устанавливаем таймер для повторных измерений
+    connect(timer, &QTimer::timeout, this, &MainWindow::on_measureButton_clicked);
+}
+
+MainWindow::~MainWindow()
+{
+    delete ui;
+}
+
+void MainWindow::on_measureButton_clicked()
+{
+    if (serialPort->isOpen()) {
+        serialPort->clear();
+        serialPort->write("M"); // Отправляем команду для измерения на Arduino
+    } else {
+        // Открываем последовательный порт
+        if (serialPort->open(QIODevice::ReadWrite)) {
+            ui->distanceLabel->setText("Waiting for data...");
+            serialPort->write("M"); // Отправляем команду для измерения
+        } else {
+            qDebug() << "Failed to open port!";
+        }
+    }
+}
+
+void MainWindow::readSerialData()
+{
+    QByteArray data = serialPort->readAll(); // Читаем все данные с порта
+    QString distance = QString::fromStdString(data.toStdString()); // Преобразуем в строку
+    ui->distanceLabel->setText("Distance: " + distance + " cm"); // Отображаем на форме
+}

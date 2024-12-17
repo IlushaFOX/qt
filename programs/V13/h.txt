@@ -1,0 +1,26 @@
+#ifndef MAINWINDOW_H
+#define MAINWINDOW_H
+
+#include <QMainWindow>
+#include <wiringPi.h>
+#include <QPushButton>
+
+class MainWindow : public QMainWindow
+{
+    Q_OBJECT
+
+public:
+    explicit MainWindow(QWidget *parent = nullptr);
+    ~MainWindow();
+
+private slots:
+    void onSwitchButtonClicked();
+
+private:
+    QPushButton *switchButton;
+    int currentMode;
+    void toggleLight();
+    void updateLight();
+};
+
+#endif // MAINWINDOW_H

@@ -1,0 +1,48 @@
+#include "mainwindow.h"
+#include "ui_mainwindow.h"
+#include <wiringPi.h>
+#include <wiringPiI2C.h>
+#include <QDebug>
+
+MainWindow::MainWindow(QWidget *parent) :
+    QMainWindow(parent),
+    ui(new Ui::MainWindow),
+    fd(-1) // Инициализация дескриптора I2C
+{
+    ui->setupUi(this);
+
+    // Инициализация I2C на Raspberry Pi с использованием wiringPi
+    if (wiringPiSetup() == -1) {
+        qCritical("Ошибка при инициализации wiringPi");
+        return;
+    }
+
+    fd = wiringPiI2CSetup(8); // Устанавливаем адрес I2C устройства (Arduino)
+    if (fd == -1) {
+        qCritical("Ошибка при подключении к I2C устройству");
+    }
+
+    ui->measureButton->setEnabled(true);
+
+    // Подключаем слот к кнопке для измерения расстояния
+    connect(ui->measureButton, &QPushButton::clicked, this, &MainWindow::measureDistance);
+}
+
+MainWindow::~MainWindow() {
+    delete ui;
+}
+
+void MainWindow::measureDistance() {
+    if (fd == -1) {
+        ui->distanceLabel->setText("Ошибка подключения I2C");
+        return;
+    }
+
+    // Чтение данных с Arduino по I2C с использованием wiringPi
+    int distance = wiringPiI2CRead(fd); // Чтение одного байта с Arduino (расстояние)
+    if (distance == -1) {
+        ui->distanceLabel->setText("Ошибка чтения данных");
+    } else {
+        ui->distanceLabel->setText("Расстояние: " + QString::number(distance) + " см");
+    }
+}
